@@ -11,7 +11,12 @@ class Order extends Model
 
     protected $casts = ['repair_process' => 'boolean'];
 
-    protected $fillable = ['customer', 'item', 'status', 'receipt_date'];
+    protected $fillable = [
+        'problem',
+        'item',
+        'status',
+        'estimated_date',
+    ];
 
     public function orders()
     {

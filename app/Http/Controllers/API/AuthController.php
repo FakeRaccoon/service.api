@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Models\Order;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -10,6 +11,7 @@ use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
+
     public function register(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -30,7 +32,7 @@ class AuthController extends Controller
         $query = User::create([
             'username' => $request->username,
             'name'     => $request->name,
-            'password' => Hash::make('123456')
+            'password' => Hash::make($request->password)
         ]);
 
         $response = [
@@ -47,7 +49,7 @@ class AuthController extends Controller
         $user = User::where('username', $request->username)->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
-            return response()->json(['Unauthorized'], 402);
+            return response()->json(['status' => '401', 'message' => 'Unauthorized'], 401);
         }
         $token = $user->createToken('mytoken')->plainTextToken;
 
@@ -56,6 +58,72 @@ class AuthController extends Controller
             'result'  => $user,
             'token'   => $token
         ];
+
+        return response()->json($response);
+    }
+    public function getDetail(Request $request)
+    {
+
+        $user = $request->user();
+
+        $response = [
+            'status'  => 200,
+            'data'  => $user
+        ];
+
+        return response()->json($response);
+    }
+    public function logout(Request $request)
+    {
+
+        $request->user()->currentAccessToken()->delete();
+
+        $response = [
+            'status'  => 200,
+            'result'  => 'token deleted',
+        ];
+
+        return response()->json($response);
+    }
+
+    public function getAllData(Request $request)
+    {
+
+        if ($request->input('username')) {
+            $data = User::where('username', 'LIKE', '%' . $request->username . '%')->get();
+        } else {
+            $data = User::all();
+        }
+
+        $result = [];
+        if ($data) {
+            if ($data->count() > 0) {
+                foreach ($data as $d) {
+                    $result[] = [
+                        'id'                => $d->id,
+                        'username'          => $d->username,
+                        'role'              => $d->role,
+                        'name'              => $d->name,
+                        'created_at'        => date('Y-m-d H:i:s', strtotime($d->created_at)),
+                        'updated_at'        => date('Y-m-d H:i:s', strtotime($d->updated_at)),
+                    ];
+                }
+                $response = [
+                    'status'     => '200',
+                    'total_data' => count($result),
+                    'result'     => $result,
+                ];
+            } else {
+                $response = [
+                    'total_data' => count($result),
+                    'result'     => $result
+                ];
+            }
+        } else {
+            $response = [
+                'message' => 'Server error!'
+            ];
+        }
 
         return response()->json($response);
     }
