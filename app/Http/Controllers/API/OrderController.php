@@ -18,30 +18,28 @@ class OrderController extends Controller
 
         $totalData = Order::all();
 
-        $start_date = Carbon::parse($request->from_date);
-        $end_date = Carbon::parse($request->to_date);
+        if ($request->filled('status') && !$request->filled('from_date') && !$request->filled('to_date')) {
+            $data = Order::where('status', $request->status)->paginate(10);
+        } elseif ($request->filled('status') && $request->filled('from_date') && $request->filled('to_date')) {
+            $start_date = Carbon::parse($request->from_date);
+            $end_date = Carbon::parse($request->to_date);
 
-        $status = $request->status;
-        $from = $start_date->startOfDay();
-        $to = $end_date->endOfDay();
+            $from = $start_date->startOfDay();
+            $to = $end_date->endOfDay();
+            $data = Order::where('status', $request->status)->whereBetween('created_at', [$from, $to])->paginate(10);
+        } elseif (!$request->filled('status') && $request->filled('from_date') && $request->filled('to_date')) {
+            $start_date = Carbon::parse($request->from_date);
+            $end_date = Carbon::parse($request->to_date);
 
-        if (!empty($status)) {
-            $data = Order::where('status', $status);
-        }
-        if (!empty($from && !empty($to)) && empty($status)) {
+            $from = $start_date->startOfDay();
+            $to = $end_date->endOfDay();
             $data = Order::whereBetween('created_at', [$from, $to])->paginate(10);
-        }
-        if (!empty($from && !empty($to)) && !empty($status)) {
-            $data = Order::where('status', $status)->whereBetween('created_at', [$from, $to])->paginate(10);
-        }
-        if (empty($from && empty($to)) && empty($status)) {
+        } else {
             $data = Order::paginate(10);
         }
 
-        $data;
-
         $result = [];
-        if ($data) {
+        if (count($data) > 0) {
             foreach ($data as $d) {
                 $result[] = [
                     'id'                => $d->id,
@@ -86,7 +84,7 @@ class OrderController extends Controller
                         'item'              => $d->item,
                         'status'            => $d->status,
                         'problem'           => $d->problem,
-                        'order_items'            => $d->orders,
+                        'order_items'       => $d->orders,
                         'payment'           => $d->payment,
                         'created_at'        => date('Y-m-d H:i:s', strtotime($d->created_at)),
                         'updated_at'        => date('Y-m-d H:i:s', strtotime($d->updated_at)),
@@ -116,6 +114,7 @@ class OrderController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'status'            => 'required',
+            'customer_id'       => 'required',
             'item'              => 'required',
             'problem'           => 'nullable',
             'estimated_date'    => 'nullable',
@@ -131,6 +130,7 @@ class OrderController extends Controller
         } else {
             $query = Order::create([
                 'status'                => $request->status,
+                'customer_id'           => $request->customer_id,
                 'item'                  => $request->item,
                 'problem'               => $request->problem,
                 'estimated_date'        => $request->estimated_date,

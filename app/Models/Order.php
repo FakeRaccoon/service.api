@@ -12,6 +12,7 @@ class Order extends Model
     protected $casts = ['repair_process' => 'boolean'];
 
     protected $fillable = [
+        'customer_id',
         'problem',
         'item',
         'status',
@@ -28,6 +29,6 @@ class Order extends Model
     }
     public function customer()
     {
-        return $this->hasOne(Customer::class)->select(array('id', 'name', 'address', 'contact'));
+        return $this->belongsTo(Customer::class)->select(array('id', 'name', 'address', 'contact'));
     }
 }

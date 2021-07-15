@@ -12,7 +12,6 @@ class CustomerController extends Controller
     public function createCustomer(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'order_id'          => 'required',
             'name'              => 'required',
             'address'           => 'nullable',
             'contact'           => 'nullable',
@@ -27,7 +26,6 @@ class CustomerController extends Controller
             return response()->json($response, 400);
         } else {
             $query = Customer::create([
-                'order_id'              => $request->order_id,
                 'name'                  => $request->name,
                 'address'               => $request->address,
                 'contact'               => $request->contact,
