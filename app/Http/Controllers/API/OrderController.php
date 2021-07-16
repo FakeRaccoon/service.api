@@ -49,6 +49,7 @@ class OrderController extends Controller
                     'problem'           => $d->problem,
                     'order_items'       => $d->orders,
                     'payment'           => $d->payment,
+                    'estimated_date'    => $d->estimated_date,
                     'created_at'        => date('Y-m-d H:i:s', strtotime($d->created_at)),
                     'updated_at'        => date('Y-m-d H:i:s', strtotime($d->updated_at)),
                 ];
@@ -86,19 +87,20 @@ class OrderController extends Controller
                         'problem'           => $d->problem,
                         'order_items'       => $d->orders,
                         'payment'           => $d->payment,
+                        'estimated_date'    => $d->estimated_date,
                         'created_at'        => date('Y-m-d H:i:s', strtotime($d->created_at)),
                         'updated_at'        => date('Y-m-d H:i:s', strtotime($d->updated_at)),
                     ];
                 }
                 $response = [
-                    'status'     => "200",
-                    'data'     => $result,
+                    'status'        => 200,
+                    'data'          => $result,
                 ];
             } else {
                 $response = [
-                    'total_data' => count($result),
-                    'status'     => "200",
-                    'data'     => $result,
+                    'total_data'    => count($result),
+                    'status'        => 200,
+                    'data'          => $result,
                 ];
             }
         } else {
@@ -144,6 +146,47 @@ class OrderController extends Controller
                 ];
 
                 return response()->json($response, 201);
+            } else {
+                $response = [
+                    'status'  => 400,
+                    'message' => 'Data gagal diproses!',
+                    'result'  => $request->all()
+                ];
+
+                return response()->json($response, 400);
+            }
+        }
+    }
+    public function updateOrder(Request $request, $id)
+    {
+        $validator = Validator::make($request->all(), [
+            'status'            => 'required',
+            'problem'           => 'nullable',
+            'estimated_date'    => 'nullable',
+        ]);
+
+        if ($validator->fails()) {
+            $response = [
+                'status'  => 400,
+                'result'  => $validator->errors()
+            ];
+
+            return response()->json($response, 400);
+        } else {
+            $query = Order::where('id', $id)->update([
+                'status'                => $request->status,
+                'problem'               => $request->problem,
+                'estimated_date'        => $request->estimated_date,
+            ]);
+
+            if ($query) {
+                $response = [
+                    'message'       => 'Data successfully updated.',
+                    'status'        => 200,
+                    'data'          => $query,
+                ];
+
+                return response()->json($response, 200);
             } else {
                 $response = [
                     'status'  => 400,
