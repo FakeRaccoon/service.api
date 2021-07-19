@@ -35,7 +35,7 @@ class OrderController extends Controller
             $to = $end_date->endOfDay();
             $data = Order::whereBetween('created_at', [$from, $to])->paginate(10);
         } else {
-            $data = Order::paginate(10);
+            $data = Order::with('orders.part')->paginate(10);
         }
 
         $result = [];
@@ -55,11 +55,13 @@ class OrderController extends Controller
                 ];
             }
             $response = [
-                'total' => $totalData->count(),
-                'filtered_data' => $data->count(),
-                'per_page' => $data->perPage(),
-                'current_page' => $data->currentPage(),
-                'data'     => $result
+                'data'     => $result,
+                'meta'     => [
+                    'total' => $totalData->count(),
+                    'filtered_data' => $data->count(),
+                    'per_page' => $data->perPage(),
+                    'current_page' => $data->currentPage(),
+                ],
             ];
         } else {
             $response = [

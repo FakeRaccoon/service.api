@@ -10,17 +10,6 @@ class Part extends Model
 {
     use HasFactory;
 
-    public static function partIndex()
-    {
-        $part = DB::table('parts')
-        ->select('parts.id', 'parts.name', DB::raw('SUM(qty) as qty'))
-        ->groupBy('name')
-        ->orderBy('id')
-        ->get();
-
-        return $part;
-    }
-
     protected $casts = ['selected' => 'boolean'];
 
     protected $fillable = ['form_id', 'name', 'qty', 'selected'];

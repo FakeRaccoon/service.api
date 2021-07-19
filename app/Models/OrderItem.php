@@ -11,7 +11,10 @@ class OrderItem extends Model
 
     protected $table = 'order_items';
 
-    protected $hidden = [
-        'created_at',
-    ];
+    protected $hidden = ['order_id', 'parts_id', 'total', 'created_at' ,'updated_at'];
+
+    public function part()
+    {
+        return $this->belongsTo(Part::class, 'parts_id', 'id');
+    }
 }

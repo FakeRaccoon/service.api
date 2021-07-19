@@ -27,4 +27,8 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('/order', [OrderController::class, 'getAllData']);
     Route::put('/order/{id}', [OrderController::class, 'updateOrder']);
     Route::get('/order/{id}', [OrderController::class, 'getDataById']);
+
+
+    Route::get('/part', [PartController::class, 'getAllData']);
+    Route::post('/part', [PartController::class, 'createPart']);
 });

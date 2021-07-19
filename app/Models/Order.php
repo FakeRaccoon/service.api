@@ -19,6 +19,8 @@ class Order extends Model
         'estimated_date',
     ];
 
+    protected $with = ['orders.part'];
+
     public function orders()
     {
         return $this->hasMany(OrderItem::class);
