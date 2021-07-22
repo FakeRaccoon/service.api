@@ -12,7 +12,9 @@ class PartController extends Controller
     public function getAllData(Request $request)
     {
 
-        $data = Part::where('name', 'LIKE', '%' . $request->name . '%')->get();
+        $totalData = Part::all();
+
+        $data = Part::where('name', 'LIKE', '%' . $request->name . '%')->paginate(10);
 
         $result = [];
         if (count($data) > 0) {
@@ -25,8 +27,14 @@ class PartController extends Controller
                 ];
             }
             $response = [
-                'count'     => count($data),
-                'data'      => $result
+                'status'    => 200,
+                'data'      => $result,
+                'meta'     => [
+                    'total' => $totalData->count(),
+                    'filtered_data' => $data->count(),
+                    'per_page' => $data->perPage(),
+                    'current_page' => $data->currentPage(),
+                ],
             ];
         } else {
             $response = [
